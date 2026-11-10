@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// Quem usa a API (leitor / administrador da biblioteca)
+model User {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  email     String   @unique
+  password  String   // sempre guardada como hash bcrypt
+  role      Role     @default(USER)
+  criadoEm DateTime @default(now())
+
+  emprestimos Emprestimo[] // relação 1:N -> um leitor tem vários empréstimos
+}
+
+// Livros do acervo — somente ADMIN pode cadastrar, editar e remover
+model Livro {
+  id         Int      @id @default(autoincrement())
+  titulo     String
+  autor      String
+  isbn       String?  @unique
+  quantidade Int      @default(1) // Total de exemplares disponíveis
+  criadoEm  DateTime @default(now())
+
+  emprestimos Emprestimo[]
+}
+
+// Recurso principal do tema: pertence a um leitor (dono)
+// Leitor só vê seus próprios empréstimos; ADMIN vê todos
+model Emprestimo {
+  id            Int       @id @default(autoincrement())
+  dataEmprestimo DateTime  @default(now())
+  dataDevolucao  DateTime?
+  devolvido      Boolean   @default(false)
+  criadoEm      DateTime  @default(now())
+  atualizadoEm  DateTime  @updatedAt
+
+  leitorId Int
+  leitor   User  @relation(fields: [leitorId], references: [id], onDelete: Cascade)
+
+  livroId  Int
+  livro    Livro @relation(fields: [livroId], references: [id], onDelete: Cascade)
+}

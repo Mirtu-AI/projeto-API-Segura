@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Biblioteca</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --tag-admin: #7c3aed;
+      --tag-user: #0284c7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    h1 {
+      font-size: 1.7rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: white;
+      text-transform: uppercase;
+    }
+    .badge-admin { background-color: var(--tag-admin); }
+    .badge-user { background-color: var(--tag-user); }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.88rem;
+      transition: background-color 0.2s;
+    }
+    .btn-primary { background-color: var(--primary); color: white; }
+    .btn-primary:hover { background-color: var(--primary-hover); }
+    .btn-danger { background-color: var(--danger); color: white; }
+    .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
+    .btn-secondary { background-color: #e2e8f0; color: #334155; }
+    .btn-secondary:hover { background-color: #cbd5e1; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .auth-section {
+      max-width: 460px;
+      margin: 40px auto;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text-muted);
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+
+    .quick-users {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .quick-users button {
+      flex: 1;
+    }
+
+    .item-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .item-card {
+      border: 1px solid var(--border);
+      padding: 14px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fafafa;
+    }
+
+    .item-info strong {
+      display: block;
+      font-size: 0.98rem;
+    }
+
+    .item-info span {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .stock-badge {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+    .stock-ok { background: #dbeafe; color: #1e40af; }
+    .stock-zero { background: #fee2e2; color: #991b1b; }
+
+    .alert {
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin-bottom: 14px;
+      font-size: 0.9rem;
+    }
+    .alert-error { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+    .alert-success { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+
+    .tag-status {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .tag-pendente { background: #fef3c7; color: #b45309; }
+    .tag-devolvido { background: #dcfce7; color: #15803d; }
+
+    .role-banner {
+      background: #eef2ff;
+      border: 1px solid #c7d2fe;
+      color: #3730a3;
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+    }
+
+    .tab-header {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 15px;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      border: none;
+      background: none;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>📚 Biblioteca Virtual</h1>
+      <div id="authHeader" class="user-profile">
+        <span>Não autenticado</span>
+      </div>
+    </header>
+
+    <div id="msgAlert" style="display:none;" class="alert"></div>
+
+    <!-- TELA DE AUTENTICAÇÃO (LOGIN / REGISTRO) -->
+    <div id="loginView" class="auth-section card">
+      <div class="tab-header">
+        <button id="tabLoginBtn" class="tab-btn active" onclick="alternarAba('login')">Fazer Login</button>
+        <button id="tabRegisterBtn" class="tab-btn" onclick="alternarAba('register')">Cadastrar Leitor</button>
+      </div>
+
+      <!-- FORMULÁRIO DE LOGIN -->
+      <form id="formLogin">
+        <div class="form-group">
+          <label>E-mail</label>
+          <input type="email" id="loginEmail" required placeholder="ex: ana@biblioteca.com">
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="loginSenha" required value="Senha123">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Entrar</button>
+
+        <div style="margin-top: 18px;">
+          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Contas de teste:</span>
+          <div class="quick-users">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="preencher('admin@biblioteca.com')">🔑 ADMIN</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="preencher('ana@biblioteca.com')">👤 Ana</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="preencher('bruno@biblioteca.com')">👤 Bruno</button>
+          </div>
+        </div>
+      </form>
+
+      <!-- FORMULÁRIO DE CADASTRO DE NOVO LEITOR -->
+      <form id="formRegister" style="display: none;">
+        <div class="form-group">
+          <label>Nome Completo</label>
+          <input type="text" id="regNome" required placeholder="Seu nome">
+        </div>
+        <div class="form-group">
+          <label>E-mail</label>
+          <input type="email" id="regEmail" required placeholder="seuemail@exemplo.com">
+        </div>
+        <div class="form-group">
+          <label>Senha (mínimo 6 caracteres)</label>
+          <input type="password" id="regSenha" required placeholder="Crie uma senha segura">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Finalizar Cadastro</button>
+      </form>
+    </div>
+
+    <!-- PAINEL PRINCIPAL -->
+    <div id="appView" style="display: none;">
+      
+      <div id="roleBanner" class="role-banner"></div>
+
+      <!-- PAINEL EXCLUSIVO DO ADMIN -->
+      <div id="adminCard" class="card" style="display: none; border-left: 4px solid var(--tag-admin);">
+        <h2>➕ Cadastrar Novo Livro no Acervo</h2>
+        <form id="formCriarLivro" style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <input type="text" id="novoTitulo" placeholder="Título do livro" required style="flex: 2; min-width: 180px; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+          <input type="text" id="novoAutor" placeholder="Autor" required style="flex: 1.5; min-width: 140px; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+          <input type="text" id="novoIsbn" placeholder="ISBN (opcional)" style="flex: 1; min-width: 110px; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+          <input type="number" id="novaQtd" placeholder="Qtd" value="3" min="1" required style="width: 80px; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+          <button type="submit" class="btn btn-primary">Cadastrar Livro</button>
+        </form>
+      </div>
+
+      <div class="grid">
+        <!-- ACERVO DE LIVROS DISPONÍVEIS -->
+        <div class="card">
+          <h2>
+            <span>📖 Acervo de Livros</span>
+            <button class="btn btn-secondary btn-sm" onclick="carregarLivros()">🔄 Atualizar</button>
+          </h2>
+          <div id="livrosList" class="item-list">Carregando acervo...</div>
+        </div>
+
+        <!-- PAINEL DE EMPRÉSTIMOS -->
+        <div class="card">
+          <h2>
+            <span id="tituloEmprestimos">📑 Empréstimos</span>
+            <button class="btn btn-secondary btn-sm" onclick="carregarEmprestimos()">🔄 Atualizar</button>
+          </h2>
+          <div id="emprestimosList" class="item-list">Carregando empréstimos...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let token = localStorage.getItem("token") || null;
+    let usuarioAtual = null;
+
+    function alternarAba(aba) {
+      if (aba === 'login') {
+        document.getElementById("formLogin").style.display = "block";
+        document.getElementById("formRegister").style.display = "none";
+        document.getElementById("tabLoginBtn").classList.add("active");
+        document.getElementById("tabRegisterBtn").classList.remove("active");
+      } else {
+        document.getElementById("formLogin").style.display = "none";
+        document.getElementById("formRegister").style.display = "block";
+        document.getElementById("tabLoginBtn").classList.remove("active");
+        document.getElementById("tabRegisterBtn").classList.add("active");
+      }
+    }
+
+    function alerta(msg, tipo = "error") {
+      const el = document.getElementById("msgAlert");
+      el.textContent = msg;
+      el.className = `alert alert-${tipo}`;
+      el.style.display = "block";
+      setTimeout(() => el.style.display = "none", 4000);
+    }
+
+    function preencher(email) {
+      alternarAba('login');
+      document.getElementById("loginEmail").value = email;
+      document.getElementById("loginSenha").value = "Senha123";
+    }
+
+    // Login
+    document.getElementById("formLogin").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value;
+      const senha = document.getElementById("loginSenha").value;
+
+      try {
+        const res = await fetch("/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, senha })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.erro || "Falha no login");
+
+        token = data.token;
+        localStorage.setItem("token", token);
+        alerta("Login realizado com sucesso!", "success");
+        iniciarApp();
+      } catch (err) {
+        alerta(err.message, "error");
+      }
+    });
+
+    // Cadastro de Usuário
+    document.getElementById("formRegister").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const nome = document.getElementById("regNome").value;
+      const email = document.getElementById("regEmail").value;
+      const senha = document.getElementById("regSenha").value;
+
+      try {
+        const res = await fetch("/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nome, email, senha })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.erro || "Falha no cadastro");
+
+        alerta("Cadastro realizado! Fazendo login...", "success");
+        // Login automático
+        const loginRes = await fetch("/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, senha })
+        });
+        const loginData = await loginRes.json();
+        token = loginData.token;
+        localStorage.setItem("token", token);
+        iniciarApp();
+      } catch (err) {
+        alerta(err.message, "error");
+      }
+    });
+
+    function logout() {
+      token = null;
+      usuarioAtual = null;
+      localStorage.removeItem("token");
+      document.getElementById("loginView").style.display = "block";
+      document.getElementById("appView").style.display = "none";
+      document.getElementById("authHeader").innerHTML = `<span>Não autenticado</span>`;
+    }
+
+    async function iniciarApp() {
+      if (!token) return;
+      try {
+        const res = await fetch("/auth/me", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error("Sessão expirada");
+        usuarioAtual = await res.json();
+
+        const ehAdmin = usuarioAtual.role === "ADMIN";
+        const roleBadge = ehAdmin 
+          ? `<span class="badge badge-admin">ADMINISTRADOR</span>` 
+          : `<span class="badge badge-user">LEITOR</span>`;
+
+        document.getElementById("authHeader").innerHTML = `
+          <span>Olá, <strong>${usuarioAtual.nome}</strong> ${roleBadge}</span>
+          <button class="btn btn-secondary btn-sm" onclick="logout()">Sair</button>
+        `;
+
+        document.getElementById("loginView").style.display = "none";
+        document.getElementById("appView").style.display = "block";
+
+        const banner = document.getElementById("roleBanner");
+        if (ehAdmin) {
+          document.getElementById("adminCard").style.display = "block";
+          document.getElementById("tituloEmprestimos").textContent = "📑 Todos os Empréstimos (Visão ADMIN)";
+          banner.innerHTML = "🛠️ <b>Modo Administrador:</b> Cadastre novos títulos com quantidade de exemplares e audite os empréstimos ativos da biblioteca.";
+        } else {
+          document.getElementById("adminCard").style.display = "none";
+          document.getElementById("tituloEmprestimos").textContent = "📑 Meus Empréstimos Ativos";
+          banner.innerHTML = "📖 <b>Modo Leitor:</b> Os livros que você retirar sairão do seu acervo disponível e aparecerão nos seus empréstimos. Ao devolver, o livro volta para o acervo.";
+        }
+
+        carregarLivros();
+        carregarEmprestimos();
+      } catch (e) {
+        logout();
+      }
+    }
+
+    async function carregarLivros() {
+      const container = document.getElementById("livrosList");
+      try {
+        const res = await fetch("/livros");
+        const livros = await res.json();
+
+        const ehAdmin = usuarioAtual?.role === "ADMIN";
+
+        // Filtro para o Leitor:
+        // Quando o leitor já pegou o livro emprestado, sai do acervo dele!
+        const livrosExibidos = ehAdmin 
+          ? livros 
+          : livros.filter(l => !l.leitoresComLivro.includes(usuarioAtual?.id));
+
+        if (livrosExibidos.length === 0) {
+          container.innerHTML = `<p style="color:var(--text-muted); padding: 10px 0;">Todos os livros disponíveis já estão em suas mãos ou o acervo está vazio.</p>`;
+          return;
+        }
+
+        container.innerHTML = livrosExibidos.map(l => {
+          const semEstoque = l.disponivel <= 0;
+          return `
+            <div class="item-card">
+              <div class="item-info">
+                <strong>${l.titulo}</strong>
+                <span>Autor: ${l.autor} ${l.isbn ? ' | ISBN: ' + l.isbn : ''}</span>
+                <div>
+                  <span class="stock-badge ${semEstoque ? 'stock-zero' : 'stock-ok'}">
+                    ${semEstoque ? '⚠️ Esgotado (0 disponíveis)' : `✅ ${l.disponivel} de ${l.quantidadeTotal} exemplares disponíveis`}
+                  </span>
+                </div>
+              </div>
+              <div>
+                ${!ehAdmin ? `
+                  <button class="btn btn-primary btn-sm" ${semEstoque ? 'disabled' : ''} onclick="solicitarEmprestimo(${l.id})">
+                    ${semEstoque ? 'Indisponível' : 'Pegar Emprestado'}
+                  </button>
+                ` : `
+                  <button class="btn btn-danger btn-sm" onclick="deletarLivro(${l.id})">Excluir</button>
+                `}
+              </div>
+            </div>
+          `;
+        }).join("");
+      } catch (e) {
+        container.innerHTML = "Erro ao carregar acervo.";
+      }
+    }
+
+    async function carregarEmprestimos() {
+      const container = document.getElementById("emprestimosList");
+      const ehAdmin = usuarioAtual?.role === "ADMIN";
+      const url = ehAdmin ? "/emprestimos" : "/emprestimos/meus";
+
+      try {
+        const res = await fetch(url, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        const emprestimos = await res.json();
+
+        // Para o leitor, mostra os ativos primeiro
+        if (emprestimos.length === 0) {
+          container.innerHTML = `<p style="color:var(--text-muted); padding: 10px 0;">Nenhum empréstimo registrado.</p>`;
+          return;
+        }
+
+        container.innerHTML = emprestimos.map(emp => {
+          const pertenceAoUsuario = emp.leitorId === usuarioAtual?.id;
+          return `
+            <div class="item-card">
+              <div class="item-info">
+                <strong>${emp.livro?.titulo || 'Livro ID #' + emp.livroId}</strong>
+                <span>
+                  ${ehAdmin ? `Leitor: <b>${emp.leitor?.nome || 'ID ' + emp.leitorId}</b> | ` : ''}
+                  Data: ${new Date(emp.dataEmprestimo).toLocaleDateString('pt-BR')}
+                </span>
+                <div style="margin-top: 4px;">
+                  <span class="tag-status ${emp.devolvido ? 'tag-devolvido' : 'tag-pendente'}">
+                    ${emp.devolvido ? 'Devolvido' : 'Com você (Em andamento)'}
+                  </span>
+                </div>
+              </div>
+              <div>
+                ${(!emp.devolvido && (!ehAdmin || pertenceAoUsuario)) ? `
+                  <button class="btn btn-secondary btn-sm" onclick="devolver(${emp.id})">Devolver</button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join("");
+      } catch (e) {
+        container.innerHTML = "Erro ao carregar empréstimos.";
+      }
+    }
+
+    async function solicitarEmprestimo(livroId) {
+      try {
+        const res = await fetch("/emprestimos", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ livroId })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.erro || "Falha ao solicitar empréstimo");
+
+        alerta("Livro retirado! Ele foi movido para os seus empréstimos.", "success");
+        // Atualiza ambas as listas simultaneamente
+        carregarLivros();
+        carregarEmprestimos();
+      } catch (err) {
+        alerta(err.message, "error");
+      }
+    }
+
+    async function devolver(id) {
+      try {
+        const res = await fetch(`/emprestimos/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ devolvido: true, dataDevolucao: new Date().toISOString() })
+        });
+        if (!res.ok) throw new Error("Erro ao registrar devolução");
+        alerta("Livro devolvido com sucesso! O exemplar voltou ao acervo.", "success");
+        // Ao devolver, o livro reaparece no acervo
+        carregarLivros();
+        carregarEmprestimos();
+      } catch (e) {
+        alerta(e.message, "error");
+      }
+    }
+
+    document.getElementById("formCriarLivro")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const titulo = document.getElementById("novoTitulo").value;
+      const autor = document.getElementById("novoAutor").value;
+      const isbn = document.getElementById("novoIsbn").value;
+      const quantidade = Number(document.getElementById("novaQtd").value);
+
+      try {
+        const res = await fetch("/livros", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ titulo, autor, isbn, quantidade })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.erro || "Erro ao cadastrar livro");
+
+        alerta("Livro cadastrado com sucesso no acervo!", "success");
+        document.getElementById("formCriarLivro").reset();
+        document.getElementById("novaQtd").value = "3";
+        carregarLivros();
+      } catch (err) {
+        alerta(err.message, "error");
+      }
+    });
+
+    async function deletarLivro(id) {
+      if (!confirm("Tem certeza que deseja excluir este livro?")) return;
+      try {
+        const res = await fetch(`/livros/${id}`, {
+          method: "DELETE",
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error("Falha ao excluir livro");
+        alerta("Livro removido do catálogo!", "success");
+        carregarLivros();
+      } catch (e) {
+        alerta(e.message, "error");
+      }
+    }
+
+    if (token) iniciarApp();
+  </script>
+</body>
+</html>

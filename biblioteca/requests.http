@@ -1,0 +1,155 @@
+### =========================================================
+### API Biblioteca — requests de teste (REST Client / httpYac)
+### =========================================================
+
+@base = http://localhost:3000
+@admin_email = admin@biblioteca.com
+@leitor_email = ana@biblioteca.com
+@senha = Senha123
+
+### ── 0. Raiz ─────────────────────────────────────────────
+GET {{base}}/
+
+### ── 1. Auth ──────────────────────────────────────────────
+
+### 1.1 Registrar novo leitor
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "nome": "Carlos Ferreira",
+  "email": "carlos@biblioteca.com",
+  "senha": "Senha123"
+}
+
+### 1.2 Login como ADMIN
+# @name loginAdmin
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{admin_email}}",
+  "senha": "{{senha}}"
+}
+
+### 1.3 Login como Leitor (Ana)
+# @name loginLeitor
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{leitor_email}}",
+  "senha": "{{senha}}"
+}
+
+### 1.4 Ver dados do usuário logado
+GET {{base}}/auth/me
+Authorization: Bearer {{loginLeitor.response.body.token}}
+
+### 1.5 Trocar senha
+PATCH {{base}}/auth/senha
+Authorization: Bearer {{loginLeitor.response.body.token}}
+Content-Type: application/json
+
+{
+  "senhaAtual": "Senha123",
+  "novaSenha": "NovaSenha456"
+}
+
+### ── 2. Livros (ADMIN cadastra) ───────────────────────────
+
+### 2.1 Listar todos os livros (pública)
+GET {{base}}/livros
+
+### 2.2 Buscar livro por ID (pública)
+GET {{base}}/livros/1
+
+### 2.3 Cadastrar livro (somente ADMIN)
+POST {{base}}/livros
+Authorization: Bearer {{loginAdmin.response.body.token}}
+Content-Type: application/json
+
+{
+  "titulo": "Quincas Borba",
+  "autor": "Machado de Assis",
+  "isbn": "9788520916542"
+}
+
+### 2.4 Atualizar livro (somente ADMIN)
+PUT {{base}}/livros/1
+Authorization: Bearer {{loginAdmin.response.body.token}}
+Content-Type: application/json
+
+{
+  "titulo": "Dom Casmurro — Edição Especial"
+}
+
+### 2.5 Remover livro (somente ADMIN)
+DELETE {{base}}/livros/6
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+### 2.6 Leitor NÃO pode cadastrar livro (403)
+POST {{base}}/livros
+Authorization: Bearer {{loginLeitor.response.body.token}}
+Content-Type: application/json
+
+{
+  "titulo": "Teste Proibido",
+  "autor": "Teste"
+}
+
+### ── 3. Empréstimos ────────────────────────────────────────
+
+### 3.1 Listar TODOS os empréstimos (somente ADMIN)
+GET {{base}}/emprestimos
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+### 3.2 Listar MEUS empréstimos (leitor logado)
+GET {{base}}/emprestimos/meus
+Authorization: Bearer {{loginLeitor.response.body.token}}
+
+### 3.3 Buscar empréstimo por ID (dono ou ADMIN)
+GET {{base}}/emprestimos/1
+Authorization: Bearer {{loginLeitor.response.body.token}}
+
+### 3.4 Criar empréstimo (leitor logado)
+POST {{base}}/emprestimos
+Authorization: Bearer {{loginLeitor.response.body.token}}
+Content-Type: application/json
+
+{
+  "livroId": 2
+}
+
+### 3.5 Registrar devolução (dono ou ADMIN)
+PUT {{base}}/emprestimos/2
+Authorization: Bearer {{loginLeitor.response.body.token}}
+Content-Type: application/json
+
+{
+  "dataDevolucao": "2026-11-20T00:00:00.000Z",
+  "devolvido": true
+}
+
+### 3.6 Remover empréstimo (dono ou ADMIN)
+DELETE {{base}}/emprestimos/5
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+### 3.7 Leitor NÃO pode ver empréstimo alheio (403)
+GET {{base}}/emprestimos/3
+Authorization: Bearer {{loginLeitor.response.body.token}}
+
+### ── 4. Users (somente ADMIN) ────────────────────────────
+
+### 4.1 Listar todos os usuários
+GET {{base}}/users
+Authorization: Bearer {{loginAdmin.response.body.token}}
+
+### 4.2 Alterar perfil de um usuário
+PATCH {{base}}/users/2/role
+Authorization: Bearer {{loginAdmin.response.body.token}}
+Content-Type: application/json
+
+{
+  "role": "ADMIN"
+}
